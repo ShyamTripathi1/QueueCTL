@@ -1,0 +1,20 @@
+{
+  "name": "queuectl---backend-developer",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "better-sqlite3": "^12.11.1",
+    "commander": "^15.0.0",
+    "uuid": "^14.0.1"
+  },
+  "devDependencies": {
+    "jest": "^30.4.2"
+  }
+}
