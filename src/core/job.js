@@ -1,4 +1,4 @@
-const { v4: uuidv4 } = require('uuid');
+const crypto = require('crypto');
 
 const VALID_STATES = ['pending', 'processing', 'completed', 'failed', 'dead'];
 
@@ -16,7 +16,7 @@ class Job {
 
     const now = new Date().toISOString();
     return {
-      id: uuidv4(),
+      id: crypto.randomUUID(),
       command,
       state: 'pending',
       attempts: 0,

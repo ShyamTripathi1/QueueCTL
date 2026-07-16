@@ -1,6 +1,6 @@
 const Job = require('./job');
 const SqliteStore = require('../storage/sqliteStore');
-const { v4: uuidv4 } = require('uuid');
+
 
 class Queue {
   constructor(store = new SqliteStore()) {

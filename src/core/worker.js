@@ -2,11 +2,11 @@ const { exec } = require('child_process');
 const Queue = require('./queue');
 const { calculateBackoff } = require('./backoff');
 const ConfigManager = require('../config/configManager');
-const { v4: uuidv4 } = require('uuid');
+const crypto = require('crypto');
 
 class Worker {
   constructor(queue = new Queue()) {
-    this.workerId = uuidv4();
+    this.workerId = crypto.randomUUID();
     this.queue = queue;
     this.isRunning = false;
     this.currentJobProcess = null;
