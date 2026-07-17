@@ -39,14 +39,30 @@ Configuration updated: max-retries = 3
 ```
 
 ### 2. Enqueue a Job
-Jobs are passed as JSON strings. Notice the escaped quotes (`\"`) to ensure it parses correctly in Windows CMD/PowerShell:
+Jobs are passed as JSON strings. 
+
+**Windows CMD** — The safest way to enqueue from CMD is to create a small one-line JS helper:
+
 ```cmd
-node bin/queuectl.js enqueue "{\"id\":\"job1\",\"command\":\"echo Hello World\"}"
+node -e "require('./src/cli/enqueue')('{\"id\":\"job1\",\"command\":\"echo Hello World\"}')"
 ```
+
+Or, save the JSON to a file and pass it:
+```cmd
+echo {"id":"job1","command":"echo Hello World"} > job.json
+node -e "require('./src/cli/enqueue')(require('fs').readFileSync('./job.json','utf8').trim())"
+```
+
+**Linux / Mac:**
+```bash
+node bin/queuectl.js enqueue '{"id":"job1","command":"echo Hello World"}'
+```
+
 *Output:*
 ```
 Enqueued job: job1
 ```
+
 
 ### 3. Start Workers
 Start N background worker processes to pull and execute jobs.

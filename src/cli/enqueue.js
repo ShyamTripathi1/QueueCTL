@@ -3,7 +3,27 @@ const ConfigManager = require('../config/configManager');
 
 module.exports = function enqueueCmd(jobJsonString) {
   try {
-    const jobData = JSON.parse(jobJsonString);
+    // Normalize: replace smart-quotes, trim whitespace
+    let raw = jobJsonString.trim();
+
+    // On Windows CMD, single-quotes are passed literally — convert them to double-quotes
+    // Only do this if the string starts with single-quote (Windows CMD won't strip them)
+    if (raw.startsWith("'") && raw.endsWith("'")) {
+      raw = raw.slice(1, -1);
+    }
+
+    // Attempt to parse as JSON
+    let jobData;
+    try {
+      jobData = JSON.parse(raw);
+    } catch {
+      // If it still fails, wrap as a plain command (user passed just the command string)
+      console.error('Failed to enqueue job: Invalid JSON. Make sure to pass a valid JSON string.');
+      console.error('Example (Windows CMD): node bin/queuectl.js enqueue "{\\"id\\":\\"job1\\",\\"command\\":\\"echo hello\\"}"');
+      console.error('Example (Linux/Mac):   node bin/queuectl.js enqueue \'{"id":"job1","command":"echo hello"}\'');
+      process.exit(1);
+    }
+
     if (!jobData.command) {
       console.error('Error: Job JSON must contain a "command" field.');
       process.exit(1);
