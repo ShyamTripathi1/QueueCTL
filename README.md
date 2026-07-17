@@ -27,8 +27,13 @@ Ensure you have Node.js (v14+) installed.
 
 The following commands use `node bin/queuectl.js` to ensure they work smoothly across all environments (especially Windows CMD/PowerShell) without needing to rely on a global `npm link`.
 
+---
+
 ### 1. Configure the Queue
-Configure global settings like retry limits and backoff base. These are persisted in the database.
+
+Set or get global settings like retry limits and backoff base. These are persisted in the database.
+
+**Set a value:**
 ```cmd
 node bin/queuectl.js config set max-retries 3
 node bin/queuectl.js config set backoff-base 2
@@ -38,11 +43,35 @@ node bin/queuectl.js config set backoff-base 2
 Configuration updated: max-retries = 3
 ```
 
+**Get a value:**
+```cmd
+node bin/queuectl.js config get max-retries
+node bin/queuectl.js config get backoff-base
+```
+*Output:*
+```
+max-retries = 3
+```
+
+**Valid config keys:** `max-retries`, `backoff-base`
+
+---
+
 ### 2. Enqueue a Job
-Jobs are passed as JSON strings. 
 
-**Windows CMD** — The safest way to enqueue from CMD is to create a small one-line JS helper:
+Jobs are passed as JSON strings containing a `command` field. An optional `id` field lets you assign a custom job ID.
 
+**Linux / Mac:**
+```bash
+node bin/queuectl.js enqueue '{"id":"job1","command":"echo Hello World"}'
+```
+
+**Windows PowerShell:**
+```powershell
+node bin/queuectl.js enqueue '{\"id\":\"job1\",\"command\":\"echo Hello World\"}'
+```
+
+**Windows CMD** — The safest way on CMD is to use a one-line `node -e` helper:
 ```cmd
 node -e "require('./src/cli/enqueue')('{\"id\":\"job1\",\"command\":\"echo Hello World\"}')"
 ```
@@ -53,32 +82,40 @@ echo {"id":"job1","command":"echo Hello World"} > job.json
 node -e "require('./src/cli/enqueue')(require('fs').readFileSync('./job.json','utf8').trim())"
 ```
 
-**Linux / Mac:**
-```bash
-node bin/queuectl.js enqueue '{"id":"job1","command":"echo Hello World"}'
-```
-
 *Output:*
 ```
 Enqueued job: job1
 ```
 
+---
 
 ### 3. Start Workers
-Start N background worker processes to pull and execute jobs.
+
+Start N background worker processes to pull and execute jobs from the queue.
+
 ```cmd
 node bin/queuectl.js worker start --count 3
 ```
+
+You can also use the shorthand `-c` flag:
+```cmd
+node bin/queuectl.js worker start -c 3
+```
+
 *Output:*
 ```
 Started 3 worker(s) in the background. PIDs: 1234, 1235, 1236
 ```
 
+> **Default:** If `--count` is omitted, 1 worker is started.
+
+---
+
 ### 4. Check Status & List Jobs
-View the queue health and list jobs by state.
+
+**View overall queue health:**
 ```cmd
 node bin/queuectl.js status
-node bin/queuectl.js list --state pending
 ```
 *Output:*
 ```
@@ -90,10 +127,47 @@ FAILED: 0 job(s)
 DEAD: 0 job(s)
 ```
 
+**List jobs filtered by state:**
+```cmd
+node bin/queuectl.js list --state pending
+node bin/queuectl.js list --state completed
+node bin/queuectl.js list --state failed
+node bin/queuectl.js list --state dead
+```
+
+Shorthand `-s` flag also works:
+```cmd
+node bin/queuectl.js list -s completed
+```
+
+*Output (example for `--state completed`):*
+```
+--- COMPLETED Jobs ---
+ID: job1 | Command: "echo Hello World" | Attempts: 1 | Updated: 2026-07-17T10:00:00.000Z
+```
+
+**Valid states:** `pending`, `processing`, `completed`, `failed`, `dead`
+
+> **Default:** If `--state` is omitted, it defaults to `pending`.
+
+---
+
 ### 5. Dead Letter Queue (DLQ)
-Jobs that fail after exceeding `max-retries` are moved to the DLQ. You can list them and retry them.
+
+Jobs that fail after exceeding `max-retries` are automatically moved to the DLQ (`dead` state). You can inspect and re-queue them.
+
+**List all dead jobs:**
 ```cmd
 node bin/queuectl.js dlq list
+```
+*Output:*
+```
+--- Dead Letter Queue (DLQ) ---
+ID: job1 | Command: "bad-command" | Failed Attempts: 3
+```
+
+**Retry a specific dead job** (moves it back to `pending`):
+```cmd
 node bin/queuectl.js dlq retry job1
 ```
 *Output:*
@@ -101,8 +175,12 @@ node bin/queuectl.js dlq retry job1
 Job job1 moved from DLQ back to pending.
 ```
 
+---
+
 ### 6. Stop Workers
-Gracefully stop all running workers. They will finish their current job before exiting.
+
+Gracefully stop all running workers. Each worker finishes its current job before exiting.
+
 ```cmd
 node bin/queuectl.js worker stop
 ```
@@ -114,6 +192,24 @@ Sent SIGTERM to worker 1235
 Sent SIGTERM to worker 1236
 All workers stopped (graceful shutdown initiated).
 ```
+
+---
+
+## Command Reference
+
+| Command | Description |
+|---|---|
+| `config set <key> <value>` | Set a config value (`max-retries`, `backoff-base`) |
+| `config get <key>` | Get a config value |
+| `enqueue <jobJson>` | Add a new job to the queue |
+| `worker start [-c <n>]` | Start N background worker processes (default: 1) |
+| `worker stop` | Gracefully stop all running workers |
+| `status` | Show job counts for every state |
+| `list [-s <state>]` | List jobs filtered by state (default: `pending`) |
+| `dlq list` | List all jobs in the Dead Letter Queue |
+| `dlq retry <jobId>` | Move a dead job back to `pending` |
+
+---
 
 ## Architecture Overview
 
