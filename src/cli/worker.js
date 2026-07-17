@@ -21,6 +21,7 @@ function start(options) {
     });
     
     pids.push(child.pid);
+    child.disconnect(); // sever IPC to let parent exit
     child.unref(); // allow the main process to exit independently
   }
 
