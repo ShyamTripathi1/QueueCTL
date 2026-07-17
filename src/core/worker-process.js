@@ -16,13 +16,22 @@ worker.start().catch(err => {
 function shutdown() {
   console.log(`[Worker Process] Shutting down gracefully...`);
   worker.stop();
-  // We wait for the loop to naturally exit or just give it some time
+  // The worker.start() promise will resolve once the loop exits.
+  // We poll until the worker's loop has naturally finished, then clean up.
+  const check = setInterval(() => {
+    if (!worker.isRunning && !worker.currentJobProcess) {
+      clearInterval(check);
+      queue.close();
+      process.exit(0);
+    }
+  }, 200);
+
+  // Safety net: force exit after 30 seconds if a job is stuck
   setTimeout(() => {
+    console.error('[Worker Process] Forced exit after timeout.');
     queue.close();
-    process.exit(0);
-  }, 1500); // Give enough time for the current job to finish if it's quick, or wait longer.
-  // Actually, wait for the worker loop to exit:
-  // But wait, if processJob is running, we shouldn't exit until it's done.
+    process.exit(1);
+  }, 30000);
 }
 
 process.on('SIGINT', shutdown);
