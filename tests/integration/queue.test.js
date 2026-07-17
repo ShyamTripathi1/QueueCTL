@@ -3,7 +3,7 @@ const path = require('path');
 const SqliteStore = require('../../src/storage/sqliteStore');
 const Queue = require('../../src/core/queue');
 const Worker = require('../../src/core/worker');
-const Job = require('../../src/core/job');
+// const Job = require('../../src/core/job'); // Unused
 
 const TEST_DB_PATH = path.join(__dirname, 'test.db');
 
@@ -27,7 +27,7 @@ describe('QueueCTL Core Logic', () => {
     if (fs.existsSync(TEST_DB_PATH)) {
       try {
         fs.unlinkSync(TEST_DB_PATH);
-      } catch (e) {} // ignore locked file errors on windows if any
+      } catch { /* ignore locked file errors on windows if any */ }
     }
   });
 

@@ -1,6 +1,7 @@
 /**
  * Abstract storage interface for QueueCTL
  */
+/* eslint-disable no-unused-vars */
 class Store {
   async init() {
     throw new Error('Not implemented');

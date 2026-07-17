@@ -44,7 +44,7 @@ class Worker {
 
   processJob(job) {
     return new Promise((resolve) => {
-      this.currentJobProcess = exec(job.command, (error, stdout, stderr) => {
+      this.currentJobProcess = exec(job.command, (error) => {
         this.currentJobProcess = null;
         
         if (error) {
@@ -68,7 +68,7 @@ class Worker {
       setTimeout(() => {
         try {
           this.queue.retryFailed(job.id);
-        } catch (err) {
+        } catch {
           // Job might have been modified or deleted
         }
       }, delayMs);

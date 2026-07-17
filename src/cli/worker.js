@@ -29,7 +29,7 @@ function start(options) {
   if (fs.existsSync(PID_FILE)) {
     try {
       existingPids = JSON.parse(fs.readFileSync(PID_FILE, 'utf8'));
-    } catch (e) {}
+    } catch { /* ignore */ }
   }
   
   const allPids = existingPids.concat(pids);
@@ -47,7 +47,7 @@ function stop() {
   let pids = [];
   try {
     pids = JSON.parse(fs.readFileSync(PID_FILE, 'utf8'));
-  } catch (e) {
+  } catch {
     console.error('Failed to read PID file.');
     process.exit(1);
   }
@@ -62,7 +62,7 @@ function stop() {
     try {
       process.kill(pid, 'SIGTERM');
       console.log(`Sent SIGTERM to worker ${pid}`);
-    } catch (err) {
+    } catch {
       console.log(`Worker ${pid} already stopped or not found.`);
     }
   });
