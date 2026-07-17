@@ -76,4 +76,10 @@ config
   .argument('<value>', 'Configuration value')
   .action(configCmd.set);
 
+config
+  .command('get')
+  .description('Get a configuration value')
+  .argument('<key>', 'Configuration key (max-retries, backoff-base)')
+  .action(configCmd.get);
+
 program.parse(process.argv);

@@ -27,6 +27,27 @@ function setConfig(key, value) {
   queue.close();
 }
 
+function getConfig(key) {
+  const validKeys = ['max-retries', 'backoff-base'];
+  const defaults = { 'max-retries': '3', 'backoff-base': '2' };
+
+  if (!validKeys.includes(key)) {
+    console.error(`Invalid config key. Must be one of: ${validKeys.join(', ')}`);
+    process.exit(1);
+  }
+
+  const queue = new Queue();
+  queue.init();
+
+  const config = new ConfigManager(queue.store);
+  const value = config.get(key, defaults[key]);
+
+  console.log(`${key} = ${value}`);
+
+  queue.close();
+}
+
 module.exports = {
-  set: setConfig
+  set: setConfig,
+  get: getConfig
 };
