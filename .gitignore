@@ -1,5 +1,9 @@
 node_modules/
 data/queuectl.db*
+data/workers.pid
 .env
 coverage/
 .DS_Store
+tests/**/*.db
+tests/**/*.db-wal
+tests/**/*.db-shm
