@@ -257,4 +257,4 @@ npm run lint
 5. **Job data survives a simulated restart:** Manually forces a job into a state, severs the DB connection to simulate a hard crash, re-initializes a fresh connection to the same file, and proves all states/locks survived intact on disk.
 
 ## Demo Video
-Demo video: <link>
+Demo video: https://drive.google.com/file/d/1sm_cUr4eUBhFWJzVW6kS0xOMilqE-7WB/view?usp=sharing
