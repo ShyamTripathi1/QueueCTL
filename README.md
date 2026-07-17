@@ -21,15 +21,17 @@ Ensure you have Node.js (v14+) installed.
    ```bash
    npm link
    ```
-   *If you skip `npm link`, you can run commands using `npx queuectl ...` or `./bin/queuectl.js ...`*
+   *If you skip `npm link`, you can replace `queuectl` in the commands below with `node bin/queuectl.js` (e.g., `node bin/queuectl.js status`). This is especially recommended for Windows users.*
 
 ## Usage Examples
 
+The following commands use `node bin/queuectl.js` to ensure they work smoothly across all environments (especially Windows CMD/PowerShell) without needing to rely on a global `npm link`.
+
 ### 1. Configure the Queue
 Configure global settings like retry limits and backoff base. These are persisted in the database.
-```bash
-queuectl config set max-retries 3
-queuectl config set backoff-base 2
+```cmd
+node bin/queuectl.js config set max-retries 3
+node bin/queuectl.js config set backoff-base 2
 ```
 *Output:*
 ```
@@ -37,9 +39,9 @@ Configuration updated: max-retries = 3
 ```
 
 ### 2. Enqueue a Job
-Jobs are passed as JSON strings.
-```bash
-queuectl enqueue '{"id":"job1","command":"echo Hello World"}'
+Jobs are passed as JSON strings. Notice the escaped quotes (`\"`) to ensure it parses correctly in Windows CMD/PowerShell:
+```cmd
+node bin/queuectl.js enqueue "{\"id\":\"job1\",\"command\":\"echo Hello World\"}"
 ```
 *Output:*
 ```
@@ -48,8 +50,8 @@ Enqueued job: job1
 
 ### 3. Start Workers
 Start N background worker processes to pull and execute jobs.
-```bash
-queuectl worker start --count 3
+```cmd
+node bin/queuectl.js worker start --count 3
 ```
 *Output:*
 ```
@@ -58,9 +60,9 @@ Started 3 worker(s) in the background. PIDs: 1234, 1235, 1236
 
 ### 4. Check Status & List Jobs
 View the queue health and list jobs by state.
-```bash
-queuectl status
-queuectl list --state pending
+```cmd
+node bin/queuectl.js status
+node bin/queuectl.js list --state pending
 ```
 *Output:*
 ```
@@ -74,9 +76,9 @@ DEAD: 0 job(s)
 
 ### 5. Dead Letter Queue (DLQ)
 Jobs that fail after exceeding `max-retries` are moved to the DLQ. You can list them and retry them.
-```bash
-queuectl dlq list
-queuectl dlq retry job1
+```cmd
+node bin/queuectl.js dlq list
+node bin/queuectl.js dlq retry job1
 ```
 *Output:*
 ```
@@ -85,8 +87,8 @@ Job job1 moved from DLQ back to pending.
 
 ### 6. Stop Workers
 Gracefully stop all running workers. They will finish their current job before exiting.
-```bash
-queuectl worker stop
+```cmd
+node bin/queuectl.js worker stop
 ```
 *Output:*
 ```
@@ -129,9 +131,10 @@ If multiple workers execute this exact millisecond, SQLite's locking mechanism s
 - **DB Path**: The SQLite DB defaults to `./data/queuectl.db` relative to the current working directory.
 
 ## Testing Instructions
-Run the integration test suite:
+Run the integration & unit test suite, and check for lint errors:
 ```bash
 npm run test
+npm run lint
 ```
 
 ### What the tests prove:
